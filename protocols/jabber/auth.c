@@ -174,8 +174,11 @@ jabber_auth_start(JabberStream *js, xmlnode *packet)
 		}
 
 		/* Ignore FB mech if it is not enabled */
-		if (!purple_account_get_bool(account, "auth_fb", FALSE) &&
-			!strcmp(possible->name, "X-FACEBOOK-PLATFORM")) {
+		if ( !(purple_account_get_bool(account, "auth_fb", FALSE) ||
+		       strcmp(possible->name, "X-FACEBOOK-PLATFORM") ||
+		       !strcmp(purple_account_get_string(account, "use_fb_xmpp", "no"), "yes")
+		      ))
+		{
 			continue;
 		}
 
