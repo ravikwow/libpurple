@@ -208,7 +208,7 @@ void jabber_presence_send(JabberStream *js, gboolean force)
 	/* changing the buzz state has to trigger a re-broadcasting of the presence for caps */
 
 	tune = purple_presence_get_status(p, "tune");
-	if (js->googletalk && !stripped && purple_status_is_active(tune)) {
+	if (tune && js->googletalk && !stripped && purple_status_is_active(tune)) {
 		stripped = jabber_google_presence_outgoing(tune);
 	}
 

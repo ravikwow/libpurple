@@ -799,6 +799,18 @@ PurpleStatus *purple_account_get_status(const PurpleAccount *account,
 									const char *status_id);
 
 /**
+ * Returns the account status with the specified ID and creates it
+ * if it does not exist.
+ *
+ * @param account   The account.
+ * @param status_id The status ID.
+ *
+ * @return The status.
+ */
+PurpleStatus *purple_account_init_status(PurpleAccount *account,
+									const char *status_id);
+
+/**
  * Returns the account status type with the specified ID.
  *
  * @param account The account.

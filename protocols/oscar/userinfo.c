@@ -284,7 +284,7 @@ oscar_user_info_append_status(PurpleConnection *gc, PurpleNotifyUserInfo *user_i
 		const char *mood;
 		const char *comment;
 		char *description;
-		status = purple_presence_get_status(presence, "mood");
+		status = purple_presence_init_status(presence, "mood");
 		mood = icq_get_custom_icon_description(purple_status_get_attr_string(status, PURPLE_MOOD_NAME));
 		if (mood) {
 			comment = purple_status_get_attr_string(status, PURPLE_MOOD_COMMENT);

@@ -696,8 +696,9 @@ status_has_changed(PurpleStatus *status)
 	if (purple_status_is_exclusive(status))
 	{
 		old_status = purple_presence_get_active_status(presence);
-		if (old_status != NULL && (old_status != status))
+		if (old_status != NULL && (old_status != status)) {
 			old_status->active = FALSE;
+		}
 		presence->active_status = status;
 	}
 	else
@@ -1119,11 +1120,13 @@ PurplePresence *
 purple_presence_new_for_account(PurpleAccount *account)
 {
 	PurplePresence *presence = NULL;
+	GList *l;
 	g_return_val_if_fail(account != NULL, NULL);
 
 	presence = purple_presence_new(PURPLE_PRESENCE_CONTEXT_ACCOUNT);
 	presence->u.account = account;
-	presence->statuses = purple_prpl_get_statuses(account, presence);
+
+	presence->statuses = NULL;
 
 	return presence;
 }
@@ -1155,7 +1158,7 @@ purple_presence_new_for_buddy(PurpleBuddy *buddy)
 
 	presence->u.buddy.name    = g_strdup(purple_buddy_get_name(buddy));
 	presence->u.buddy.account = account;
-	presence->statuses = purple_prpl_get_statuses(account, presence);
+	presence->statuses = NULL;
 
 	presence->u.buddy.buddy = buddy;
 
@@ -1218,7 +1221,7 @@ purple_presence_set_status_active(PurplePresence *presence, const char *status_i
 	g_return_if_fail(presence  != NULL);
 	g_return_if_fail(status_id != NULL);
 
-	status = purple_presence_get_status(presence, status_id);
+	status = purple_presence_init_status(presence, status_id);
 
 	g_return_if_fail(status != NULL);
 	/* TODO: Should we do the following? */
@@ -1472,6 +1475,17 @@ purple_presence_get_status(const PurplePresence *presence, const char *status_id
 		if (status != NULL)
 			g_hash_table_insert(presence->status_table,
 								g_strdup(purple_status_get_id(status)), status);
+	}
+
+	return status;
+}
+
+PurpleStatus *purple_presence_init_status(PurplePresence *presence, const char *status_id) {
+	PurpleStatus *status = purple_presence_get_status(presence, status_id);
+
+	if (status == NULL) {
+		status = purple_prpl_get_status(purple_presence_get_account(presence), presence, status_id);
+		purple_presence_add_status(presence, status);
 	}
 
 	return status;

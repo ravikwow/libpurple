@@ -2783,10 +2783,10 @@ void purple_blist_remove_account(PurpleAccount *account)
 		}
 	}
 
-	for (iter = list; iter; iter = iter->next)
-	{
-		purple_presence_set_status_active(iter->data, "offline", TRUE);
-	}
+// 	for (iter = list; iter; iter = iter->next)
+// 	{
+// 		purple_presence_set_status_active(iter->data, "offline", TRUE);
+// 	}
 	g_list_free(list);
 }
 

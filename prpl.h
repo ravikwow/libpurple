@@ -917,6 +917,17 @@ void purple_prpl_change_account_status(PurpleAccount *account,
 GList *purple_prpl_get_statuses(PurpleAccount *account, PurplePresence *presence);
 
 /**
+ * Returns particular status type from a prpl.
+ *
+ * @param account The account the user is on.
+ * @param presence The presence for which we're going to get statuses
+ * @param id The ID of status.
+ *
+ * @return Status or NULL if status with this ID does not exist
+ */
+PurpleStatus *purple_prpl_get_status(PurpleAccount *account, PurplePresence *presence, const char *id);
+
+/**
  * Send an attention request message.
  *
  * @param gc The connection to send the message on.
