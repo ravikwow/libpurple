@@ -1722,7 +1722,7 @@ static int clientautoresp(OscarData *od, FlapConnection *conn, aim_module_t *mod
 						account = purple_connection_get_account(od->gc);
 						buddy = purple_find_buddy(account, bn);
 						presence = purple_buddy_get_presence(buddy);
-						status = purple_presence_get_status(presence, "mood");
+						status = purple_presence_init_status(presence, "mood");
 						if (status) {
 							purple_prpl_got_user_status(account, bn,
 									"mood",

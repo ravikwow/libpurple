@@ -5008,7 +5008,7 @@ void purple_util_set_current_song(const char *title, const char *artist, const c
 			continue;
 
 		presence = purple_account_get_presence(account);
-		tune = purple_presence_get_status(presence, "tune");
+		tune = purple_presence_init_status(presence, "tune");
 		if (!tune)
 			continue;
 		if (title) {
