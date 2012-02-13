@@ -80,30 +80,31 @@ am__DEPENDENCIES_1 =
 @STATIC_JABBER_FALSE@	$(am__DEPENDENCIES_1)
 am__libjabber_la_SOURCES_DIST = adhoccommands.c adhoccommands.h auth.c \
 	auth.h auth_digest_md5.c auth_digest_md5.h auth_plain.c \
-	auth_scram.c auth_scram.h buddy.c buddy.h bosh.c bosh.h caps.c \
-	caps.h chat.c chat.h data.c data.h disco.c disco.h \
-	google/gmail.c google/gmail.h google/google.c google/google.h \
-	google/google_presence.c google/google_presence.h \
-	google/google_roster.c google/google_roster.h \
-	google/google_session.c google/google_session.h \
-	google/jingleinfo.c google/jingleinfo.h google/relay.c \
-	google/relay.h ibb.c ibb.h iq.c iq.h jabber.c jabber.h \
-	jingle/jingle.c jingle/jingle.h jingle/content.c \
-	jingle/content.h jingle/iceudp.c jingle/iceudp.h \
-	jingle/rawudp.c jingle/rawudp.h jingle/rtp.c jingle/rtp.h \
-	jingle/session.c jingle/session.h jingle/transport.c \
-	jingle/transport.h jutil.c jutil.h message.c message.h \
-	namespaces.h oob.c oob.h parser.c parser.h pep.c pep.h ping.c \
-	ping.h presence.c presence.h roster.c roster.h si.c si.h \
-	useravatar.c useravatar.h usermood.c usermood.h usernick.c \
-	usernick.h usertune.c usertune.h xdata.c xdata.h auth_cyrus.c \
-	libxmpp.c
+	auth_scram.c auth_scram.h auth_fb.c buddy.c buddy.h bosh.c \
+	bosh.h caps.c caps.h chat.c chat.h data.c data.h disco.c \
+	disco.h fbapi.c fbapi.h google/gmail.c google/gmail.h \
+	google/google.c google/google.h google/google_presence.c \
+	google/google_presence.h google/google_roster.c \
+	google/google_roster.h google/google_session.c \
+	google/google_session.h google/jingleinfo.c \
+	google/jingleinfo.h google/relay.c google/relay.h ibb.c ibb.h \
+	iq.c iq.h jabber.c jabber.h jingle/jingle.c jingle/jingle.h \
+	jingle/content.c jingle/content.h jingle/iceudp.c \
+	jingle/iceudp.h jingle/rawudp.c jingle/rawudp.h jingle/rtp.c \
+	jingle/rtp.h jingle/session.c jingle/session.h \
+	jingle/transport.c jingle/transport.h jutil.c jutil.h \
+	message.c message.h namespaces.h oob.c oob.h parser.c parser.h \
+	pep.c pep.h ping.c ping.h presence.c presence.h roster.c \
+	roster.h si.c si.h useravatar.c useravatar.h usermood.c \
+	usermood.h usernick.c usernick.h usertune.c usertune.h xdata.c \
+	xdata.h auth_cyrus.c libxmpp.c
 @USE_CYRUS_SASL_TRUE@am__objects_1 = libjabber_la-auth_cyrus.lo
 am__objects_2 = libjabber_la-adhoccommands.lo libjabber_la-auth.lo \
 	libjabber_la-auth_digest_md5.lo libjabber_la-auth_plain.lo \
-	libjabber_la-auth_scram.lo libjabber_la-buddy.lo \
-	libjabber_la-bosh.lo libjabber_la-caps.lo libjabber_la-chat.lo \
-	libjabber_la-data.lo libjabber_la-disco.lo \
+	libjabber_la-auth_scram.lo libjabber_la-auth_fb.lo \
+	libjabber_la-buddy.lo libjabber_la-bosh.lo \
+	libjabber_la-caps.lo libjabber_la-chat.lo libjabber_la-data.lo \
+	libjabber_la-disco.lo libjabber_la-fbapi.lo \
 	libjabber_la-gmail.lo libjabber_la-google.lo \
 	libjabber_la-google_presence.lo libjabber_la-google_roster.lo \
 	libjabber_la-google_session.lo libjabber_la-jingleinfo.lo \
@@ -423,24 +424,24 @@ EXTRA_DIST = \
 pkgdir = $(libdir)/purple-$(PURPLE_MAJOR_VERSION)
 JABBERSOURCES = adhoccommands.c adhoccommands.h auth.c auth.h \
 	auth_digest_md5.c auth_digest_md5.h auth_plain.c auth_scram.c \
-	auth_scram.h buddy.c buddy.h bosh.c bosh.h caps.c caps.h \
-	chat.c chat.h data.c data.h disco.c disco.h google/gmail.c \
-	google/gmail.h google/google.c google/google.h \
-	google/google_presence.c google/google_presence.h \
-	google/google_roster.c google/google_roster.h \
-	google/google_session.c google/google_session.h \
-	google/jingleinfo.c google/jingleinfo.h google/relay.c \
-	google/relay.h ibb.c ibb.h iq.c iq.h jabber.c jabber.h \
-	jingle/jingle.c jingle/jingle.h jingle/content.c \
-	jingle/content.h jingle/iceudp.c jingle/iceudp.h \
-	jingle/rawudp.c jingle/rawudp.h jingle/rtp.c jingle/rtp.h \
-	jingle/session.c jingle/session.h jingle/transport.c \
-	jingle/transport.h jutil.c jutil.h message.c message.h \
-	namespaces.h oob.c oob.h parser.c parser.h pep.c pep.h ping.c \
-	ping.h presence.c presence.h roster.c roster.h si.c si.h \
-	useravatar.c useravatar.h usermood.c usermood.h usernick.c \
-	usernick.h usertune.c usertune.h xdata.c xdata.h \
-	$(am__append_1)
+	auth_scram.h auth_fb.c buddy.c buddy.h bosh.c bosh.h caps.c \
+	caps.h chat.c chat.h data.c data.h disco.c disco.h fbapi.c \
+	fbapi.h google/gmail.c google/gmail.h google/google.c \
+	google/google.h google/google_presence.c \
+	google/google_presence.h google/google_roster.c \
+	google/google_roster.h google/google_session.c \
+	google/google_session.h google/jingleinfo.c \
+	google/jingleinfo.h google/relay.c google/relay.h ibb.c ibb.h \
+	iq.c iq.h jabber.c jabber.h jingle/jingle.c jingle/jingle.h \
+	jingle/content.c jingle/content.h jingle/iceudp.c \
+	jingle/iceudp.h jingle/rawudp.c jingle/rawudp.h jingle/rtp.c \
+	jingle/rtp.h jingle/session.c jingle/session.h \
+	jingle/transport.c jingle/transport.h jutil.c jutil.h \
+	message.c message.h namespaces.h oob.c oob.h parser.c parser.h \
+	pep.c pep.h ping.c ping.h presence.c presence.h roster.c \
+	roster.h si.c si.h useravatar.c useravatar.h usermood.c \
+	usermood.h usernick.c usernick.h usertune.c usertune.h xdata.c \
+	xdata.h $(am__append_1)
 AM_CFLAGS = $(st)
 libxmpp_la_LDFLAGS = -module -avoid-version
 @STATIC_JABBER_FALSE@st = 
@@ -557,6 +558,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libjabber_la-auth.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libjabber_la-auth_cyrus.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libjabber_la-auth_digest_md5.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libjabber_la-auth_fb.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libjabber_la-auth_plain.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libjabber_la-auth_scram.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libjabber_la-bosh.Plo@am__quote@
@@ -566,6 +568,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libjabber_la-content.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libjabber_la-data.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libjabber_la-disco.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libjabber_la-fbapi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libjabber_la-gmail.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libjabber_la-google.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libjabber_la-google_presence.Plo@am__quote@
@@ -663,6 +666,14 @@ libjabber_la-auth_scram.lo: auth_scram.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libjabber_la_CFLAGS) $(CFLAGS) -c -o libjabber_la-auth_scram.lo `test -f 'auth_scram.c' || echo '$(srcdir)/'`auth_scram.c
 
+libjabber_la-auth_fb.lo: auth_fb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libjabber_la_CFLAGS) $(CFLAGS) -MT libjabber_la-auth_fb.lo -MD -MP -MF $(DEPDIR)/libjabber_la-auth_fb.Tpo -c -o libjabber_la-auth_fb.lo `test -f 'auth_fb.c' || echo '$(srcdir)/'`auth_fb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libjabber_la-auth_fb.Tpo $(DEPDIR)/libjabber_la-auth_fb.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='auth_fb.c' object='libjabber_la-auth_fb.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libjabber_la_CFLAGS) $(CFLAGS) -c -o libjabber_la-auth_fb.lo `test -f 'auth_fb.c' || echo '$(srcdir)/'`auth_fb.c
+
 libjabber_la-buddy.lo: buddy.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libjabber_la_CFLAGS) $(CFLAGS) -MT libjabber_la-buddy.lo -MD -MP -MF $(DEPDIR)/libjabber_la-buddy.Tpo -c -o libjabber_la-buddy.lo `test -f 'buddy.c' || echo '$(srcdir)/'`buddy.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libjabber_la-buddy.Tpo $(DEPDIR)/libjabber_la-buddy.Plo
@@ -710,6 +721,14 @@ libjabber_la-disco.lo: disco.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='disco.c' object='libjabber_la-disco.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libjabber_la_CFLAGS) $(CFLAGS) -c -o libjabber_la-disco.lo `test -f 'disco.c' || echo '$(srcdir)/'`disco.c
+
+libjabber_la-fbapi.lo: fbapi.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libjabber_la_CFLAGS) $(CFLAGS) -MT libjabber_la-fbapi.lo -MD -MP -MF $(DEPDIR)/libjabber_la-fbapi.Tpo -c -o libjabber_la-fbapi.lo `test -f 'fbapi.c' || echo '$(srcdir)/'`fbapi.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libjabber_la-fbapi.Tpo $(DEPDIR)/libjabber_la-fbapi.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='fbapi.c' object='libjabber_la-fbapi.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libjabber_la_CFLAGS) $(CFLAGS) -c -o libjabber_la-fbapi.lo `test -f 'fbapi.c' || echo '$(srcdir)/'`fbapi.c
 
 libjabber_la-gmail.lo: google/gmail.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libjabber_la_CFLAGS) $(CFLAGS) -MT libjabber_la-gmail.lo -MD -MP -MF $(DEPDIR)/libjabber_la-gmail.Tpo -c -o libjabber_la-gmail.lo `test -f 'google/gmail.c' || echo '$(srcdir)/'`google/gmail.c
