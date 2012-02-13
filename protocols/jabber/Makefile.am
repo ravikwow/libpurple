@@ -15,6 +15,7 @@ JABBERSOURCES = \
 			  auth_plain.c \
 			  auth_scram.c \
 			  auth_scram.h \
+			  auth_fb.c \
 			  buddy.c \
 			  buddy.h \
 			  bosh.c \
@@ -27,6 +28,8 @@ JABBERSOURCES = \
 			  data.h \
 			  disco.c \
 			  disco.h \
+			  fbapi.c \
+			  fbapi.h \
 			  google/gmail.c \
 			  google/gmail.h \
 			  google/google.c \

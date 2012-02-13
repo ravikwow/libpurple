@@ -322,6 +322,12 @@ init_plugin(PurplePlugin *plugin)
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,
 		option);
 
+	option = purple_account_option_bool_new(
+						_("Use Facebook AUTH method when connecting the Facebook"),
+						"auth_fb", FALSE);
+	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options,
+						   option);
+
 	my_protocol = plugin;
 
 	purple_prefs_remove("/plugins/prpl/jabber");

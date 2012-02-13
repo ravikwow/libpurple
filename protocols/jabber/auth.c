@@ -137,6 +137,7 @@ jabber_auth_start(JabberStream *js, xmlnode *packet)
 	xmlnode *mechs, *mechnode;
 	JabberSaslState state;
 	char *msg = NULL;
+	PurpleAccount *account = purple_connection_get_account(js->gc);
 
 	if(js->registration) {
 		jabber_register_start(js);
@@ -170,6 +171,12 @@ jabber_auth_start(JabberStream *js, xmlnode *packet)
 		if (g_str_equal(possible->name, "*")) {
 			js->auth_mech = possible;
 			break;
+		}
+
+		/* Ignore FB mech if it is not enabled */
+		if (!purple_account_get_bool(account, "auth_fb", FALSE) &&
+			!strcmp(possible->name, "X-FACEBOOK-PLATFORM")) {
+			continue;
 		}
 
 		/* Can we find this mechanism in the server's list? */
@@ -522,6 +529,9 @@ void jabber_auth_init(void)
 #ifdef HAVE_CYRUS_SASL
 	jabber_auth_add_mech(jabber_auth_get_cyrus_mech());
 #endif
+
+	/* Facebook */
+	jabber_auth_add_mech(jabber_auth_get_fb_mech());
 
 	tmp = jabber_auth_get_scram_mechs(&count);
 	for (i = 0; i < count; ++i)
