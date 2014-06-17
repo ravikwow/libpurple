@@ -172,7 +172,7 @@ purple_prpl_got_account_status(PurpleAccount *account, const char *status_id, ..
 	g_return_if_fail(purple_account_is_connected(account));
 
 	presence = purple_account_get_presence(account);
-	status   = purple_presence_init_status(presence, status_id);
+	status   = purple_presence_get_status(presence, status_id);
 
 	g_return_if_fail(status != NULL);
 
@@ -266,7 +266,7 @@ purple_prpl_got_user_status(PurpleAccount *account, const char *name,
 		buddy = l->data;
 
 		presence = purple_buddy_get_presence(buddy);
-		status   = purple_presence_init_status(presence, status_id);
+		status   = purple_presence_get_status(presence, status_id);
 
 		if(NULL == status)
 			/*
@@ -407,26 +407,6 @@ purple_prpl_get_statuses(PurpleAccount *account, PurplePresence *presence)
 	statuses = g_list_reverse(statuses);
 
 	return statuses;
-}
-
-PurpleStatus *
-purple_prpl_get_status(PurpleAccount *account, PurplePresence *presence, const char *id)
-{
-	GList *l;
-	PurpleStatus *status = NULL;
-
-	g_return_val_if_fail(account  != NULL, NULL);
-	g_return_val_if_fail(presence != NULL, NULL);
-
-	for (l = purple_account_get_status_types(account); l != NULL; l = l->next)
-	{
-		if (purple_strequal(purple_status_type_get_id((PurpleStatusType *)l->data), id)) {
-			status = purple_status_new((PurpleStatusType *)l->data, presence);
-			break;
-		}
-	}
-
-	return status;
 }
 
 static void

@@ -973,18 +973,6 @@ PurpleStatus *purple_presence_get_status(const PurplePresence *presence,
 									 const char *status_id);
 
 /**
- * Returns the status with the specified ID from a presence and creates
- * if it does not exist.
- *
- * @param presence  The presence.
- * @param status_id The ID of the status.
- *
- * @return The status.
- */
-PurpleStatus *purple_presence_init_status(PurplePresence *presence,
-									 const char *status_id);
-
-/**
  * Returns the active exclusive status from a presence.
  *
  * @param presence The presence.

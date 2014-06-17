@@ -25,9 +25,7 @@
 
 
 #include "internal.h"
-#include <glib/gprintf.h>
-
-#include "purple.h"
+#include "debug.h"
 
 #include "protocol.h"
 #include "mxit.h"
@@ -86,7 +84,6 @@ struct ii_url_request
 static void mxit_cb_ii_returned(PurpleUtilFetchUrlData* url_data, gpointer user_data, const gchar* url_text, gsize len, const gchar* error_message)
 {
 	struct ii_url_request*	iireq		= (struct ii_url_request*) user_data;
-	char*					ii_data;
 	int*					intptr		= NULL;
 	int						id;
 
@@ -106,12 +103,8 @@ static void mxit_cb_ii_returned(PurpleUtilFetchUrlData* url_data, gpointer user_
 		goto done;
 	}
 
-	/* make a copy of the data */
-	ii_data = g_malloc(len);
-	memcpy(ii_data, (const char*) url_text, len);
-
-	/* we now have the inline image, store it in the imagestore */
-	id = purple_imgstore_add_with_id(ii_data, len, NULL);
+	/* we now have the inline image, store a copy in the imagestore */
+	id = purple_imgstore_add_with_id(g_memdup(url_text, len), len, NULL);
 
 	/* map the inline image id to purple image id */
 	intptr = g_malloc(sizeof(int));
@@ -253,8 +246,8 @@ static void command_clear(struct MXitSession* session, const char* from, GHashTa
 
 /*------------------------------------------------------------------------
  * Process a Reply MXit command.
- *  [::op=cmd|type=reply|replymsg=back|selmsg=b) Back|id=12345:]
- *  [::op=cmd|nm=rep|type=reply|replymsg=back|selmsg=b) Back|id=12345:]
+ *  [::op=cmd|type=reply|replymsg=back|selmsg=b) Back|displaymsg=Processing|id=12345:]
+ *  [::op=cmd|nm=rep|type=reply|replymsg=back|selmsg=b) Back|displaymsg=Processing|id=12345:]
  *
  *  @param mx			The received message data object
  *  @param hash			The MXit command <key,value> map
@@ -265,22 +258,26 @@ static void command_reply(struct RXMsgData* mx, GHashTable* hash)
 	char* selmsg;
 	char* nm;
 
-	selmsg = g_hash_table_lookup(hash, "selmsg");			/* find the selection message */
-	replymsg = g_hash_table_lookup(hash, "replymsg");		/* find the reply message */
+	selmsg = g_hash_table_lookup(hash, "selmsg");			/* selection message */
+	replymsg = g_hash_table_lookup(hash, "replymsg");		/* reply message */
 	nm = g_hash_table_lookup(hash, "nm");					/* name parameter */
-	if ((selmsg) && (replymsg) && (nm)) {
-		gchar*	seltext = g_markup_escape_text(purple_url_decode(selmsg), -1);
-		gchar*	replycmd = g_strdup_printf("::type=reply|nm=%s|res=%s|err=0:", nm, replymsg);
 
-		mxit_add_html_link( mx, replycmd, seltext );
+	if ((selmsg == NULL) || (replymsg == NULL))
+		return;		/* these parameters are required */
+
+	if (nm) {		/* indicates response must be a structured response */
+		gchar*	seltext = g_markup_escape_text(purple_url_decode(selmsg), -1);
+		gchar*	replycmd = g_strdup_printf("type=reply|nm=%s|res=%s|err=0", nm, purple_url_decode(replymsg));
+
+		mxit_add_html_link( mx, replycmd, TRUE, seltext );
 
 		g_free(seltext);
 		g_free(replycmd);
 	}
-	else if ((selmsg) && (replymsg)) {
+	else {
 		gchar*	seltext = g_markup_escape_text(purple_url_decode(selmsg), -1);
 
-		mxit_add_html_link( mx, purple_url_decode(replymsg), seltext );
+		mxit_add_html_link( mx, purple_url_decode(replymsg), FALSE, seltext );
 
 		g_free(seltext);
 	}
@@ -301,7 +298,7 @@ static void command_platformreq(GHashTable* hash, GString* msg)
 	char*	dest;
 
 	selmsg = g_hash_table_lookup(hash, "selmsg");			/* find the selection message */
-	if (selmsg) {
+	if (selmsg && (strlen(selmsg) > 0)) {
 		text = g_markup_escape_text(purple_url_decode(selmsg), -1);
 	}
 
@@ -317,6 +314,7 @@ static void command_platformreq(GHashTable* hash, GString* msg)
 
 /*------------------------------------------------------------------------
  * Process an inline image MXit command.
+ *  [::op=img|dat=ASDF23408asdflkj2309flkjsadf%3d%3d|algn=1|w=120|h=12|t=100|replymsg=text:]
  *
  *  @param mx			The received message data object
  *  @param hash			The MXit command <key,value> map
@@ -327,7 +325,6 @@ static void command_image(struct RXMsgData* mx, GHashTable* hash, GString* msg)
 	const char*	img;
 	const char*	reply;
 	guchar*		rawimg;
-	char		link[256];
 	gsize		rawimglen;
 	int			imgid;
 
@@ -336,8 +333,7 @@ static void command_image(struct RXMsgData* mx, GHashTable* hash, GString* msg)
 		rawimg = purple_base64_decode(img, &rawimglen);
 		//purple_util_write_data_to_file_absolute("/tmp/mxitinline.png", (char*) rawimg, rawimglen);
 		imgid = purple_imgstore_add_with_id(rawimg, rawimglen, NULL);
-		g_snprintf(link, sizeof(link), "<img id=\"%i\">", imgid);
-		g_string_append_printf(msg, "%s", link);
+		g_string_append_printf(msg, "<img id=\"%i\">", imgid);
 		mx->flags |= PURPLE_MESSAGE_IMAGES;
 	}
 	else {
@@ -372,7 +368,7 @@ static void command_image(struct RXMsgData* mx, GHashTable* hash, GString* msg)
 	reply = g_hash_table_lookup(hash, "replymsg");
 	if (reply) {
 		g_string_append_printf(msg, "\n");
-		mxit_add_html_link(mx, reply, _( "click here" ));
+		mxit_add_html_link(mx, purple_url_decode(reply), FALSE, _( "click here" ));
 	}
 }
 
@@ -405,19 +401,31 @@ static void command_imagestrip(struct MXitSession* session, const char* from, GH
 		guchar*		rawimg;
 		gsize		rawimglen;
 		char*		dir;
+		char*		escfrom;
+		char*		escname;
+		char*		escvalidator;
 		char*		filename;
 
 		/* base64 decode the image data */
 		rawimg = purple_base64_decode(tmp, &rawimglen);
+		if (!rawimg)
+			return;
 
 		/* save it to a file */
-		dir = g_strdup_printf("%s/mxit/imagestrips", purple_user_dir());
+		dir = g_build_filename(purple_user_dir(), "mxit", "imagestrips", NULL);
 		purple_build_dir(dir, S_IRUSR | S_IWUSR | S_IXUSR);		/* ensure directory exists */
 
-		filename = g_strdup_printf("%s/%s-%s-%s.png", dir, from, name, validator);
+		escfrom = g_strdup(purple_escape_filename(from));
+		escname = g_strdup(purple_escape_filename(name));
+		escvalidator = g_strdup(purple_escape_filename(validator));
+		filename = g_strdup_printf("%s" G_DIR_SEPARATOR_S "%s-%s-%s.png", dir, escfrom, escname, escvalidator);
+
 		purple_util_write_data_to_file_absolute(filename, (char*) rawimg, rawimglen);
 
 		g_free(dir);
+		g_free(escfrom);
+		g_free(escname);
+		g_free(escvalidator);
 		g_free(filename);
 	}
 
@@ -465,7 +473,7 @@ static void command_screeninfo(struct MXitSession* session, const char* from)
  *   menu ::= <menuitem> { ";" <menuitem> }
  *     menuitem ::= { type "," <text> "," <name> "," <meta> }
  *   colors ::= <color> { ";" <color> }
- *     color ::= <colorid> "," <ARGB hex color>   
+ *     color ::= <colorid> "," <ARGB hex color>
  *
  *  @param session		The MXit session object
  *  @param from			The sender of the message.
@@ -520,7 +528,7 @@ static void command_table(struct RXMsgData* mx, GHashTable* hash)
 
 	/* number of columns */
 	tmp = g_hash_table_lookup(hash, "col");
-	nr_columns = atoi(tmp);	
+	nr_columns = atoi(tmp);
 
 	/* number of rows */
 	tmp = g_hash_table_lookup(hash, "row");

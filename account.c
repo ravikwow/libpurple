@@ -1550,7 +1550,7 @@ purple_account_request_change_password(PurpleAccount *account)
 	field = purple_request_field_string_new("password", _("Original password"),
 										  NULL, FALSE);
 	purple_request_field_string_set_masked(field, TRUE);
-	if (!(prpl_info && (prpl_info->options | OPT_PROTO_PASSWORD_OPTIONAL)))
+	if (!prpl_info || !(prpl_info->options & OPT_PROTO_PASSWORD_OPTIONAL))
 		purple_request_field_set_required(field, TRUE);
 	purple_request_field_group_add_field(group, field);
 
@@ -1558,7 +1558,7 @@ purple_account_request_change_password(PurpleAccount *account)
 										  _("New password"),
 										  NULL, FALSE);
 	purple_request_field_string_set_masked(field, TRUE);
-	if (!(prpl_info && (prpl_info->options | OPT_PROTO_PASSWORD_OPTIONAL)))
+	if (!prpl_info || !(prpl_info->options & OPT_PROTO_PASSWORD_OPTIONAL))
 		purple_request_field_set_required(field, TRUE);
 	purple_request_field_group_add_field(group, field);
 
@@ -1566,7 +1566,7 @@ purple_account_request_change_password(PurpleAccount *account)
 										  _("New password (again)"),
 										  NULL, FALSE);
 	purple_request_field_string_set_masked(field, TRUE);
-	if (!(prpl_info && (prpl_info->options | OPT_PROTO_PASSWORD_OPTIONAL)))
+	if (!prpl_info || !(prpl_info->options & OPT_PROTO_PASSWORD_OPTIONAL))
 		purple_request_field_set_required(field, TRUE);
 	purple_request_field_group_add_field(group, field);
 
@@ -1833,7 +1833,7 @@ purple_account_set_status_list(PurpleAccount *account, const char *status_id,
 	g_return_if_fail(account   != NULL);
 	g_return_if_fail(status_id != NULL);
 
-	status = purple_account_init_status(account, status_id);
+	status = purple_account_get_status(account, status_id);
 	if (status == NULL)
 	{
 		purple_debug_error("account",
@@ -2307,15 +2307,6 @@ purple_account_get_status(const PurpleAccount *account, const char *status_id)
 	g_return_val_if_fail(status_id != NULL, NULL);
 
 	return purple_presence_get_status(account->presence, status_id);
-}
-
-PurpleStatus *
-purple_account_init_status(PurpleAccount *account, const char *status_id)
-{
-	g_return_val_if_fail(account   != NULL, NULL);
-	g_return_val_if_fail(status_id != NULL, NULL);
-
-	return purple_presence_init_status(account->presence, status_id);
 }
 
 PurpleStatusType *

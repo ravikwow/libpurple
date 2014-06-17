@@ -284,7 +284,7 @@ oscar_user_info_append_status(PurpleConnection *gc, PurpleNotifyUserInfo *user_i
 		const char *mood;
 		const char *comment;
 		char *description;
-		status = purple_presence_init_status(presence, "mood");
+		status = purple_presence_get_status(presence, "mood");
 		mood = icq_get_custom_icon_description(purple_status_get_attr_string(status, PURPLE_MOOD_NAME));
 		if (mood) {
 			comment = purple_status_get_attr_string(status, PURPLE_MOOD_COMMENT);
@@ -309,8 +309,6 @@ oscar_user_info_append_extra_info(PurpleConnection *gc, PurpleNotifyUserInfo *us
 {
 	OscarData *od;
 	PurpleAccount *account;
-	PurplePresence *presence = NULL;
-	PurpleStatus *status = NULL;
 	PurpleGroup *g = NULL;
 	struct buddyinfo *bi = NULL;
 	char *tmp;
@@ -332,8 +330,6 @@ oscar_user_info_append_extra_info(PurpleConnection *gc, PurpleNotifyUserInfo *us
 		bname = purple_buddy_get_name(b);
 		g = purple_buddy_get_group(b);
 		gname = purple_group_get_name(g);
-		presence = purple_buddy_get_presence(b);
-		status = purple_presence_get_active_status(presence);
 	}
 
 	if (userinfo != NULL)
@@ -388,7 +384,6 @@ oscar_user_info_display_icq(OscarData *od, struct aim_icq_info *info)
 	struct buddyinfo *bi;
 	gchar who[16];
 	PurpleNotifyUserInfo *user_info;
-	const gchar *alias;
 
 	if (!info->uin)
 		return;
@@ -485,10 +480,6 @@ oscar_user_info_display_icq(OscarData *od, struct aim_icq_info *info)
 		oscar_user_info_convert_and_add_hyperlink(account, od, user_info, _("Web Page"), info->email, "");
 	}
 
-	if (buddy != NULL)
-		alias = purple_buddy_get_alias(buddy);
-	else
-		alias = who;
 	purple_notify_userinfo(gc, who, user_info, NULL, NULL);
 	purple_notify_user_info_destroy(user_info);
 }

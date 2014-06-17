@@ -178,6 +178,8 @@ msn_message_parse_payload(MsnMessage *msg,
 		g_free(tmp_base);
 		g_return_if_reached();
 	}
+
+	/* NUL-terminate the end of the headers - it'll get skipped over below */
 	*end = '\0';
 
 	/* Split the headers and parse each one */
@@ -195,10 +197,12 @@ msn_message_parse_payload(MsnMessage *msg,
 
 			/* The only one I care about is 'boundary' (which is folded from
 			   the key 'Content-Type'), so only process that. */
-			if (!strcmp(key, "boundary")) {
+			if (!strcmp(key, "boundary") && value) {
 				char *end = strchr(value, '\"');
-				*end = '\0';
-				msn_message_set_header(msg, key, value);
+				if (end) {
+					*end = '\0';
+					msn_message_set_header(msg, key, value);
+				}
 			}
 
 			g_strfreev(tokens);
@@ -210,18 +214,15 @@ msn_message_parse_payload(MsnMessage *msg,
 		key = tokens[0];
 		value = tokens[1];
 
-		/*if not MIME content ,then return*/
 		if (!strcmp(key, "MIME-Version"))
 		{
-			g_strfreev(tokens);
-			continue;
+			/* Ignore MIME-Version header */
 		}
-
-		if (!strcmp(key, "Content-Type"))
+		else if (!strcmp(key, "Content-Type"))
 		{
 			char *charset, *c;
 
-			if ((c = strchr(value, ';')) != NULL)
+			if (value && (c = strchr(value, ';')) != NULL)
 			{
 				if ((charset = strchr(c, '=')) != NULL)
 				{
@@ -257,13 +258,47 @@ msn_message_parse_payload(MsnMessage *msg,
 		msg->body[msg->body_len] = '\0';
 	}
 
-	if ((!content_type || !strcmp(content_type, "text/plain"))
-			&& msg->charset == NULL) {
-		char *body = g_convert(msg->body, msg->body_len, "UTF-8",
-				"ISO-8859-1", NULL, &msg->body_len, NULL);
-		g_free(msg->body);
-		msg->body = body;
-		msg->charset = g_strdup("UTF-8");
+	if (msg->body && content_type && purple_str_has_prefix(content_type, "text/")) {
+		char *body = NULL;
+
+		if (msg->charset == NULL || g_str_equal(msg->charset, "UTF-8")) {
+			/* Charset is UTF-8 */
+			if (!g_utf8_validate(msg->body, msg->body_len, NULL)) {
+				purple_debug_warning("msn", "Message contains invalid "
+						"UTF-8. Attempting to salvage.\n");
+				body = purple_utf8_salvage(msg->body);
+				payload_len = strlen(body);
+			}
+		} else {
+			/* Charset is something other than UTF-8 */
+			GError *err = NULL;
+			body = g_convert(msg->body, msg->body_len, "UTF-8",
+					msg->charset, NULL, &payload_len, &err);
+			if (!body || err) {
+				purple_debug_warning("msn", "Unable to convert message from "
+						"%s to UTF-8: %s\n", msg->charset,
+						err ? err->message : "Unknown error");
+				if (err)
+					g_error_free(err);
+
+				/* Fallback to ISO-8859-1 */
+				g_free(body);
+				body = g_convert(msg->body, msg->body_len, "UTF-8",
+						"ISO-8859-1", NULL, &payload_len, NULL);
+				if (!body) {
+					g_free(msg->body);
+					msg->body = NULL;
+					msg->body_len = 0;
+				}
+			}
+		}
+
+		if (body) {
+			g_free(msg->body);
+			msg->body = body;
+			msg->body_len = payload_len;
+			msn_message_set_charset(msg, "UTF-8");
+		}
 	}
 
 	g_free(tmp_base);
@@ -331,11 +366,12 @@ msn_message_gen_payload(MsnMessage *msg, size_t *ret_size)
 		n += strlen(n);
 	}
 
-	n += g_strlcpy(n, "\r\n", end - n);
+	if ((end - n) > 2)
+		n += g_strlcpy(n, "\r\n", end - n);
 
 	body = msn_message_get_bin_data(msg, &body_len);
 
-	if (body != NULL)
+	if (body != NULL && (end - n) > body_len)
 	{
 		memcpy(n, body, body_len);
 		n += body_len;
