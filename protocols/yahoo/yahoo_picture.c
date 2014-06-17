@@ -84,10 +84,20 @@ void yahoo_process_picture(PurpleConnection *gc, struct yahoo_packet *pkt)
 		switch (pair->key) {
 		case 1:
 		case 4:
-			who = pair->value;
+			if (g_utf8_validate(pair->value, -1, NULL)) {
+				who = pair->value;
+			} else {
+				purple_debug_warning("yahoo", "yahoo_process_picture "
+						"got non-UTF-8 string for key %d\n", pair->key);
+			}
 			break;
 		case 5:
-			us = pair->value;
+			if (g_utf8_validate(pair->value, -1, NULL)) {
+				us = pair->value;
+			} else {
+				purple_debug_warning("yahoo", "yahoo_process_picture "
+						"got non-UTF-8 string for key %d\n", pair->key);
+			}
 			break;
 		case 13: {
 				int tmp;
@@ -100,7 +110,12 @@ void yahoo_process_picture(PurpleConnection *gc, struct yahoo_packet *pkt)
 				break;
 			}
 		case 20:
-			url = pair->value;
+			if (g_utf8_validate(pair->value, -1, NULL)) {
+				url = pair->value;
+			} else {
+				purple_debug_warning("yahoo", "yahoo_process_picture "
+						"got non-UTF-8 string for key %d\n", pair->key);
+			}
 			break;
 		case 192:
 			checksum = strtol(pair->value, NULL, 10);
@@ -137,9 +152,6 @@ void yahoo_process_picture(PurpleConnection *gc, struct yahoo_packet *pkt)
 		if (url_data != NULL) {
 			yd = gc->proto_data;
 			yd->url_datas = g_slist_prepend(yd->url_datas, url_data);
-		} else {
-			g_free(data->who);
-			g_free(data);
 		}
 	} else if (who && send_icon_info) {
 		yahoo_send_picture_info(gc, who);
@@ -157,7 +169,12 @@ void yahoo_process_picture_checksum(PurpleConnection *gc, struct yahoo_packet *p
 
 		switch (pair->key) {
 		case 4:
-			who = pair->value;
+			if (g_utf8_validate(pair->value, -1, NULL)) {
+				who = pair->value;
+			} else {
+				purple_debug_warning("yahoo", "yahoo_process_picture_checksum "
+						"got non-UTF-8 string for key %d\n", pair->key);
+			}
 			break;
 		case 5:
 			/* us */
@@ -200,7 +217,12 @@ void yahoo_process_picture_upload(PurpleConnection *gc, struct yahoo_packet *pkt
 			/* filename on our computer. */
 			break;
 		case 20: /* url at yahoo */
-			url = pair->value;
+			if (g_utf8_validate(pair->value, -1, NULL)) {
+				url = pair->value;
+			} else {
+				purple_debug_warning("yahoo", "yahoo_process_picture_upload "
+						"got non-UTF-8 string for key %d\n", pair->key);
+			}
 		case 38: /* timestamp */
 			break;
 		}
@@ -228,7 +250,12 @@ void yahoo_process_avatar_update(PurpleConnection *gc, struct yahoo_packet *pkt)
 
 		switch (pair->key) {
 		case 4:
-			who = pair->value;
+			if (g_utf8_validate(pair->value, -1, NULL)) {
+				who = pair->value;
+			} else {
+				purple_debug_warning("yahoo", "yahoo_process_avatar_upload "
+						"got non-UTF-8 string for key %d\n", pair->key);
+			}
 			break;
 		case 5:
 			/* us */

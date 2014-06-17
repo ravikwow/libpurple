@@ -4,7 +4,7 @@
  * purple
  *
  * Copyright (C) 2003, Robbert Haarman <purple@inglorion.net>
- * Copyright (C) 2003, Ethan Blanton <eblanton@cs.purdue.edu>
+ * Copyright (C) 2003, 2012 Ethan Blanton <elb@pidgin.im>
  * Copyright (C) 2000-2003, Rob Flynn <rob@tgflinux.com>
  * Copyright (C) 1998-1999, Mark Spencer <markster@marko.net>
  *
@@ -40,8 +40,6 @@
 #define PING_TIMEOUT 60
 
 static void irc_ison_buddy_init(char *name, struct irc_buddy *ib, GList **list);
-
-static void irc_who_channel(PurpleConversation *conv, struct irc_conn *irc);
 
 static const char *irc_blist_icon(PurpleAccount *a, PurpleBuddy *b);
 static GList *irc_status_types(PurpleAccount *account);
@@ -157,6 +155,7 @@ int irc_send_len(struct irc_conn *irc, const char *buf, int buflen)
  	char *tosend= g_strdup(buf);
 
 	purple_signal_emit(_irc_plugin, "irc-sending-text", purple_account_get_connection(irc->account), &tosend);
+	
 	if (tosend == NULL)
 		return 0;
 
@@ -240,29 +239,6 @@ static void irc_ison_buddy_init(char *name, struct irc_buddy *ib, GList **list)
 	*list = g_list_append(*list, ib);
 }
 
-
-gboolean irc_who_channel_timeout(struct irc_conn *irc)
-{
-	// WHO all of our channels.
-	g_list_foreach(purple_get_conversations(), (GFunc)irc_who_channel, (gpointer)irc);
-	
-	return TRUE;
-}
-
-static void irc_who_channel(PurpleConversation *conv, struct irc_conn *irc)
-{
-	if (purple_conversation_get_account(conv) == irc->account
-	    && purple_conversation_get_type(conv) == PURPLE_CONV_TYPE_CHAT
-	    && !purple_conv_chat_has_left(PURPLE_CONV_CHAT(conv))) {
-		char *buf = irc_format(irc, "vc", "WHO", purple_conversation_get_name(conv));
-		
-		purple_debug(PURPLE_DEBUG_INFO, "irc",
-			     "Performing periodic who on %s\n",
-			     purple_conversation_get_name(conv));
-		irc_send(irc, buf);
-		g_free(buf);
-	}
-}
 
 static void irc_ison_one(struct irc_conn *irc, struct irc_buddy *ib)
 {
@@ -414,12 +390,20 @@ static void irc_login(PurpleAccount *account)
 static gboolean do_login(PurpleConnection *gc) {
 	char *buf, *tmp = NULL;
 	char *server;
-	const char *username, *realname;
+	const char *nickname, *identname, *realname;
 	struct irc_conn *irc = gc->proto_data;
 	const char *pass = purple_connection_get_password(gc);
+#ifdef HAVE_CYRUS_SASL
+	const gboolean use_sasl = purple_account_get_bool(irc->account, "sasl", FALSE);
+#endif
 
 	if (pass && *pass) {
-		buf = irc_format(irc, "v:", "PASS", pass);
+#ifdef HAVE_CYRUS_SASL
+		if (use_sasl)
+			buf = irc_format(irc, "vv:", "CAP", "REQ", "sasl");
+		else /* intended to fall through */
+#endif
+			buf = irc_format(irc, "v:", "PASS", pass);
 		if (irc_send(irc, buf) < 0) {
 			g_free(buf);
 			return FALSE;
@@ -428,14 +412,14 @@ static gboolean do_login(PurpleConnection *gc) {
 	}
 
 	realname = purple_account_get_string(irc->account, "realname", "");
-	username = purple_account_get_string(irc->account, "username", "");
+	identname = purple_account_get_string(irc->account, "username", "");
 
-	if (username == NULL || *username == '\0') {
-		username = g_get_user_name();
+	if (identname == NULL || *identname == '\0') {
+		identname = g_get_user_name();
 	}
 
-	if (username != NULL && strchr(username, ' ') != NULL) {
-		tmp = g_strdup(username);
+	if (identname != NULL && strchr(identname, ' ') != NULL) {
+		tmp = g_strdup(identname);
 		while ((buf = strchr(tmp, ' ')) != NULL) {
 			*buf = '_';
 		}
@@ -448,7 +432,7 @@ static gboolean do_login(PurpleConnection *gc) {
 		server = g_strdup(irc->server);
 	}
 
-	buf = irc_format(irc, "vvvv:", "USER", tmp ? tmp : username, "*", server,
+	buf = irc_format(irc, "vvvv:", "USER", tmp ? tmp : identname, "*", server,
 	                 strlen(realname) ? realname : IRC_DEFAULT_ALIAS);
 	g_free(tmp);
 	g_free(server);
@@ -457,9 +441,9 @@ static gboolean do_login(PurpleConnection *gc) {
 		return FALSE;
 	}
 	g_free(buf);
-	username = purple_connection_get_display_name(gc);
-	buf = irc_format(irc, "vn", "NICK", username);
-	irc->reqnick = g_strdup(username);
+	nickname = purple_connection_get_display_name(gc);
+	buf = irc_format(irc, "vn", "NICK", nickname);
+	irc->reqnick = g_strdup(nickname);
 	irc->nickused = FALSE;
 	if (irc_send(irc, buf) < 0) {
 		g_free(buf);
@@ -536,8 +520,6 @@ static void irc_close(PurpleConnection *gc)
 	}
 	if (irc->timer)
 		purple_timeout_remove(irc->timer);
-	if (irc->who_channel_timer)
-		purple_timeout_remove(irc->who_channel_timer);
 	g_hash_table_destroy(irc->cmds);
 	g_hash_table_destroy(irc->msgs);
 	g_hash_table_destroy(irc->buddies);
@@ -552,6 +534,17 @@ static void irc_close(PurpleConnection *gc)
 
 	g_free(irc->mode_chars);
 	g_free(irc->reqnick);
+
+#ifdef HAVE_CYRUS_SASL
+	if (irc->sasl_conn) {
+		sasl_dispose(&irc->sasl_conn);
+		irc->sasl_conn = NULL;
+	}
+	g_free(irc->sasl_cb);
+	if(irc->sasl_mechs)
+		g_string_free(irc->sasl_mechs, TRUE);
+#endif
+
 
 	g_free(irc);
 }
@@ -1058,7 +1051,7 @@ static void _init_plugin(PurplePlugin *plugin)
 	option = purple_account_option_bool_new(_("Auto-detect incoming UTF-8"), "autodetect_utf8", IRC_DEFAULT_AUTODETECT);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
-	option = purple_account_option_string_new(_("Username"), "username", "");
+	option = purple_account_option_string_new(_("Ident name"), "username", "");
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
 
 	option = purple_account_option_string_new(_("Real name"), "realname", "");
@@ -1071,6 +1064,16 @@ static void _init_plugin(PurplePlugin *plugin)
 
 	option = purple_account_option_bool_new(_("Use SSL"), "ssl", FALSE);
 	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
+
+#ifdef HAVE_CYRUS_SASL
+	option = purple_account_option_bool_new(_("Authenticate with SASL"), "sasl", FALSE);
+	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
+
+	option = purple_account_option_bool_new(
+						_("Allow plaintext SASL auth over unencrypted connection"),
+						"auth_plain_in_clear", FALSE);
+	prpl_info.protocol_options = g_list_append(prpl_info.protocol_options, option);
+#endif
 
 	_irc_plugin = plugin;
 

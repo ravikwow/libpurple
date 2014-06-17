@@ -417,14 +417,13 @@ struct _PurplePluginProtocolInfo
 	 * the account is not connected, return -ENOTCONN.  If the
 	 * PRPL is unable to send the message for another reason, return
 	 * some other negative value.  You can use one of the valid
-	 * errno values, or just big something.  If the message should
-	 * not be echoed to the conversation window, return 0.
+	 * errno values, or just big something.
 	 *
 	 * @param id      The id of the chat to send the message to.
 	 * @param message The message to send to the chat.
 	 * @param flags   A bitwise OR of #PurpleMessageFlags representing
 	 *                message flags.
-	 * @return 	  A positive number or 0 in case of succes,
+	 * @return 	  A positive number or 0 in case of success,
 	 *                a negative error number in case of failure.
 	 */
 	int  (*chat_send)(PurpleConnection *, int id, const char *message, PurpleMessageFlags flags);
@@ -915,17 +914,6 @@ void purple_prpl_change_account_status(PurpleAccount *account,
  * @return List of statuses
  */
 GList *purple_prpl_get_statuses(PurpleAccount *account, PurplePresence *presence);
-
-/**
- * Returns particular status type from a prpl.
- *
- * @param account The account the user is on.
- * @param presence The presence for which we're going to get statuses
- * @param id The ID of status.
- *
- * @return Status or NULL if status with this ID does not exist
- */
-PurpleStatus *purple_prpl_get_status(PurpleAccount *account, PurplePresence *presence, const char *id);
 
 /**
  * Send an attention request message.

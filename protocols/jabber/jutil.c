@@ -508,6 +508,25 @@ jabber_id_free(JabberID *jid)
 	}
 }
 
+
+gboolean
+jabber_id_equal(const JabberID *jid1, const JabberID *jid2)
+{
+	if (!jid1 && !jid2) {
+		/* Both are null therefore equal */
+		return TRUE;
+	}
+
+	if (!jid1 || !jid2) {
+		/* One is null, other is non-null, therefore not equal */
+		return FALSE;
+	}
+
+	return purple_strequal(jid1->node, jid2->node) &&
+			purple_strequal(jid1->domain, jid2->domain) &&
+			purple_strequal(jid1->resource, jid2->resource);
+}
+
 char *jabber_get_domain(const char *in)
 {
 	JabberID *jid = jabber_id_new(in);
@@ -536,6 +555,17 @@ char *jabber_get_resource(const char *in)
 	return out;
 }
 
+JabberID *
+jabber_id_to_bare_jid(const JabberID *jid)
+{
+	JabberID *result = g_new0(JabberID, 1);
+
+	result->node = g_strdup(jid->node);
+	result->domain = g_strdup(jid->domain);
+
+	return result;
+}
+
 char *
 jabber_get_bare_jid(const char *in)
 {
@@ -558,6 +588,19 @@ jabber_id_get_bare_jid(const JabberID *jid)
 	return g_strconcat(jid->node ? jid->node : "",
 	                   jid->node ? "@" : "",
 	                   jid->domain,
+	                   NULL);
+}
+
+char *
+jabber_id_get_full_jid(const JabberID *jid)
+{
+	g_return_val_if_fail(jid != NULL, NULL);
+
+	return g_strconcat(jid->node ? jid->node : "",
+	                   jid->node ? "@" : "",
+	                   jid->domain,
+	                   jid->resource ? "/" : "",
+	                   jid->resource ? jid->resource : "",
 	                   NULL);
 }
 

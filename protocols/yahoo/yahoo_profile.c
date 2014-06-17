@@ -1035,7 +1035,7 @@ yahoo_got_photo(PurpleUtilFetchUrlData *url_data, gpointer data,
 
 #if PHOTO_SUPPORT
 	/* Try to put the photo in there too, if there's one and is readable */
-	if (data && url_text && len != 0) {
+	if (url_text && len != 0) {
 		if (strstr(url_text, "400 Bad Request")
 				|| strstr(url_text, "403 Forbidden")
 				|| strstr(url_text, "404 Not Found")) {
@@ -1277,10 +1277,6 @@ void yahoo_get_info(PurpleConnection *gc, const char *name)
 	url_data = purple_util_fetch_url(url, TRUE, NULL, FALSE, yahoo_got_info, data);
 	if (url_data != NULL)
 		yd->url_datas = g_slist_prepend(yd->url_datas, url_data);
-	else {
-		g_free(data->name);
-		g_free(data);
-	}
 
 	g_free(url);
 }
